@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -116,7 +117,21 @@ public class CategoryServiceImpl implements CategoryService {
         }
         categoriesReporsitory.saveAll(categories);
     }
-    }
+
+    @Override
+    public List<CategoryDTO> getAllCategoriesList() {
+        List<Categories> list = categoriesReporsitory.findByDeletedAtIsNullAndStatus(true);
+        return list.stream()
+                .map(c -> new CategoryDTO(
+                        c.getCategoryId(),
+                        c.getCategoryName(),
+                        c.getDescription(),
+                        c.getImageUrl(),
+                        c.getCreatedAt(),
+                        c.getUpdatedAt()
+                ))
+                .collect(Collectors.toList());    }
+}
 
 
 

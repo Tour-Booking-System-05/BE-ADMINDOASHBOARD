@@ -1,12 +1,10 @@
 package com.travel.demo.controller;
 
 import com.travel.demo.dto.CategoryDTO;
-import com.travel.demo.entity.Categories;
 import com.travel.demo.service.CategoryService;
 import com.travel.demo.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,10 +23,6 @@ public class CategoryController {
     @Autowired
     private CloudinaryService cloudinaryService;
 
-    //    public CategoryController(CategoryService categoryService, CloudinaryService cloudinaryService) {
-//        this.categoryService = categoryService;
-//        this.cloudinaryService = cloudinaryService;
-//    }
     // ✅ Lấy danh sách tất cả danh mục
     @GetMapping
 //    Là đối tượng đại diện cho phản hồi HTTP (HTTP response) mà Spring sẽ trả về cho client (bao gồm status code, body, headers, ...).
@@ -46,6 +40,9 @@ public class CategoryController {
     public ResponseEntity<CategoryDTO> create(@RequestBody CategoryDTO categoryDTO) {
 //request body -> lấy body từ request gửi lên
         return ResponseEntity.ok(categoryService.create(categoryDTO));
+
+
+
     }
 
     @PutMapping("/{id}")
@@ -71,7 +68,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getById(id));
     }
 
-    // xóa nhiều
+    // Xóa nhiều
     @DeleteMapping("/bulk-delete")
 //Còn <?> nghĩa là generic type chưa xác định
     public ResponseEntity<?> deleteMultipe(@RequestBody List<Integer> ids) {
@@ -82,6 +79,13 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi khi xóa danh mục: " + e.getMessage());
         }
+
     }
+    @GetMapping("/all")
+    public ResponseEntity<List<CategoryDTO>> getAllCategoriesList() {
+        List<CategoryDTO> categories = categoryService.getAllCategoriesList();
+        return ResponseEntity.ok(categories);
+    }
+
 }
 

@@ -2,8 +2,12 @@ package com.travel.demo.service.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.travel.demo.dto.TourDTO;
 import com.travel.demo.service.CloudinaryService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
@@ -28,4 +32,5 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             throw new RuntimeException("Lỗi upload ảnh: " + e.getMessage());
         }
     }
+
 }

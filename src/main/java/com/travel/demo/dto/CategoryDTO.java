@@ -75,6 +75,15 @@ public CategoryDTO(Integer id, String name, String description, Boolean status,
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
+    public CategoryDTO(Integer categoryId, String categoryName, String description,
+                       String imageUrl, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = categoryId;
+        this.categoryName = categoryName;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     public CategoryDTO() {
     }

@@ -18,5 +18,6 @@ public interface CategoryService {
     void softDelete(Integer id);
     CategoryDTO getById(Integer id);
     void deleteMultipe(List<Integer> ids);
+    List<CategoryDTO> getAllCategoriesList();
 
 }

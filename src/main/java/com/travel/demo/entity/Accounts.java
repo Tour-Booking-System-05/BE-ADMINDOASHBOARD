@@ -19,8 +19,8 @@ public class Accounts {
 
 	@Column(nullable = false)
 	private String password;
-	@Column(name = "role")
 	@Enumerated(EnumType.STRING)
+	@Column(name = "role", nullable = false)
 	private Role role;
 	@Column(name = "is_admin_root")
 	private Boolean isAdminRoot = false;
@@ -42,14 +42,20 @@ public class Accounts {
 
 	@Column(name = "image_url")
 	private String imageUrl;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "role_id")
-	private Roles roleEntity;
-
-	@OneToOne
-	@JoinColumn(name = "cart_id")
+	@OneToOne(mappedBy = "account", cascade = CascadeType.ALL)
 	private Carts cart;
+
+	public Carts getCart() {
+		return cart;
+	}
+
+	public void setCart(Carts cart) {
+		this.cart = cart;
+	}
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "role_id", referencedColumnName = "role_id")
+	private Roles roleEntity;
 
 	public Integer getAccountId() {
 		return accountId;
@@ -137,14 +143,6 @@ public class Accounts {
 
 	public void setRoleEntity(Roles roleEntity) {
 		this.roleEntity = roleEntity;
-	}
-
-	public Carts getCart() {
-		return cart;
-	}
-
-	public void setCart(Carts cart) {
-		this.cart = cart;
 	}
 
 	public Role getRole() {

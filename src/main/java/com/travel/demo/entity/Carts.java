@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 import java.util.List;
-
 @Entity
 @Table(name = "carts")
 @Getter
@@ -13,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Carts {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "cart_id")
@@ -20,6 +20,11 @@ public class Carts {
 
 	@Column(name = "created_at")
 	private LocalDate createdAt;
+
+	// ✅ Bên giữ khóa ngoại account_id
+	@OneToOne
+	@JoinColumn(name = "account_id")
+	private Accounts account;
 
 	@OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
 	private List<ItemCarts> itemCarts;

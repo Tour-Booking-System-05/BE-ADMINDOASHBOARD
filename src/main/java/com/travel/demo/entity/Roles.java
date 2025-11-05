@@ -6,11 +6,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "roles")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Roles {
 
     @Id
@@ -28,4 +23,36 @@ public class Roles {
     // Quan hệ ngược tới Accounts (1-n)
     @OneToMany(mappedBy = "roleEntity")
     private List<Accounts> accounts;
+
+    public Integer getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(Integer roleId) {
+        this.roleId = roleId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<AdminRolePermissions> getAdminRolePermissions() {
+        return adminRolePermissions;
+    }
+
+    public void setAdminRolePermissions(List<AdminRolePermissions> adminRolePermissions) {
+        this.adminRolePermissions = adminRolePermissions;
+    }
+
+    public List<Accounts> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(List<Accounts> accounts) {
+        this.accounts = accounts;
+    }
 }
