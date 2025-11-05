@@ -42,46 +42,48 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public Page<TourDTO> getAllTour(int page, int size, String[] sort, String keyword) {
 
-        // 1️⃣ Xác định hướng sắp xếp
+        // 1 Xác định hướng sắp xếp
         Sort.Direction direction = Sort.Direction.fromString(sort[1]);
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
 
-        // 2️⃣ Lọc dữ liệu theo từ khóa
+        // 2Lọc dữ liệu theo từ khóa
         Page<Items> itemsPage;
         if (keyword != null && !keyword.trim().isEmpty()) {
-            itemsPage = itemRepository.findByTitleTourContainingIgnoreCaseAndDeletedAtIsNull(keyword, pageable);
+            itemsPage = itemRepository.findByTitleTourContainingIgnoreCaseAndDeletedAtIsNull(keyword.trim(), pageable);
         } else {
             itemsPage = itemRepository.findByDeletedAtIsNull(pageable);
         }
 
-        // 3️⃣ Lấy ngày hôm nay
+        // 3Lấy ngày hôm nay
         LocalDate today = LocalDate.now();
 
-        // 4️⃣ Map Entity → DTO + Cập nhật trạng thái theo ngày
+        // 4 Map Entity → DTO + Cập nhật trạng thái tự động
         return itemsPage.map(item -> {
             try {
                 LocalDate start = item.getDateTour();
                 LocalDate end = item.getDateEndTour();
 
-                if (start != null && end != null) {
+                // Bỏ qua nếu tour đã bị hủy thủ công (status = 0)
+                if (item.getStatus() != 0 && start != null && end != null) {
+
                     // Nếu hôm nay nằm trong khoảng thời gian tour => "Đang đi"
                     if ((today.isEqual(start) || today.isAfter(start)) && today.isBefore(end)) {
                         if (item.getStatus() != 2) {
-                            item.setStatus((byte) 2);
+                            item.setStatus((byte) 2); // Đang đi
                             itemRepository.save(item);
                         }
                     }
-                    //  Nếu tour đã kết thúc
+                    // Nếu tour đã kết thúc => "Ẩn" (hoặc kết thúc)
                     else if (today.isAfter(end)) {
                         if (item.getStatus() != 0) {
-                            item.setStatus((byte) 0);
+                            item.setStatus((byte) 0); // Hủy / kết thúc
                             itemRepository.save(item);
                         }
                     }
-                    // Nếu tour chưa bắt đầu
+                    // Nếu tour chưa bắt đầu => "Hoạt động"
                     else if (today.isBefore(start)) {
                         if (item.getStatus() != 1) {
-                            item.setStatus((byte) 1);
+                            item.setStatus((byte) 1); // Hoạt động
                             itemRepository.save(item);
                         }
                     }
@@ -91,9 +93,9 @@ public class ItemServiceImpl implements ItemService {
                 e.printStackTrace();
             }
 
-            // Chuyển ảnh JSON → List<String>
+            // 5Chuyển ảnh JSON → List<String>
             List<String> imgs = new ArrayList<>();
-            if (item.getImageUrls() != null) {
+            if (item.getImageUrls() != null && !item.getImageUrls().isEmpty()) {
                 try {
                     imgs = mapper.readValue(item.getImageUrls(), new TypeReference<List<String>>() {});
                 } catch (Exception e) {
@@ -101,6 +103,7 @@ public class ItemServiceImpl implements ItemService {
                 }
             }
 
+            // 6 Trả về DTO
             return new TourDTO(
                     item.getItemId(),
                     item.getCategory() != null ? item.getCategory().getCategoryId() : null,
@@ -120,6 +123,7 @@ public class ItemServiceImpl implements ItemService {
             );
         });
     }
+
     @Override
     @Transactional
     public TourDTO create(TourDTO tourDTO) {
