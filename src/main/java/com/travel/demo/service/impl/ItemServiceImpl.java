@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -55,43 +56,9 @@ public class ItemServiceImpl implements ItemService {
         }
 
         // 3Lấy ngày hôm nay
-        LocalDate today = LocalDate.now();
 
         // 4 Map Entity → DTO + Cập nhật trạng thái tự động
         return itemsPage.map(item -> {
-            try {
-                LocalDate start = item.getDateTour();
-                LocalDate end = item.getDateEndTour();
-
-                // Bỏ qua nếu tour đã bị hủy thủ công (status = 0)
-                if (item.getStatus() != 0 && start != null && end != null) {
-
-                    // Nếu hôm nay nằm trong khoảng thời gian tour => "Đang đi"
-                    if ((today.isEqual(start) || today.isAfter(start)) && today.isBefore(end)) {
-                        if (item.getStatus() != 2) {
-                            item.setStatus((byte) 2); // Đang đi
-                            itemRepository.save(item);
-                        }
-                    }
-                    // Nếu tour đã kết thúc => "Ẩn" (hoặc kết thúc)
-                    else if (today.isAfter(end)) {
-                        if (item.getStatus() != 0) {
-                            item.setStatus((byte) 0); // Hủy / kết thúc
-                            itemRepository.save(item);
-                        }
-                    }
-                    // Nếu tour chưa bắt đầu => "Hoạt động"
-                    else if (today.isBefore(start)) {
-                        if (item.getStatus() != 1) {
-                            item.setStatus((byte) 1); // Hoạt động
-                            itemRepository.save(item);
-                        }
-                    }
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
 
             // 5Chuyển ảnh JSON → List<String>
             List<String> imgs = new ArrayList<>();
@@ -255,8 +222,98 @@ public class ItemServiceImpl implements ItemService {
             throw new EntityNotFoundException("Không tìm thấy tour nào để xóa");
         }
 
+        // --- Kiểm tra nếu có tour có status = 2 ---
+        List<Items> lockedItems = items.stream()
+                .filter(i -> i.getStatus() != null && i.getStatus() == 2)
+                .collect(Collectors.toList());
+
+        if (!lockedItems.isEmpty()) {
+            String lockedNames = lockedItems.stream()
+                    .map(Items::getTitleTour)
+                    .collect(Collectors.joining(", "));
+            throw new IllegalStateException("Không thể xóa tour đang hoạt động (status = 2): " + lockedNames);
+        }
+
+        // --- Gắn deletedAt cho các tour hợp lệ ---
         items.forEach(i -> i.setDeletedAt(LocalDate.now()));
         itemRepository.saveAll(items);
+    }
+
+    @Override
+    @Transactional
+    public TourDTO cloneTour(Integer id) {
+        // 1Lấy tour gốc
+        Items original = itemRepository.findByItemIdAndDeletedAtIsNull(id);
+        if (original == null) {
+            throw new EntityNotFoundException("Không tìm thấy tour cần sao chép");
+        }
+
+        // 2Tạo bản sao
+        Items clone = new Items();
+        clone.setCategory(original.getCategory());
+        clone.setGuider(original.getGuider());
+        clone.setTitleTour(original.getTitleTour() + " - Copy");
+        clone.setDescription(original.getDescription());
+        clone.setLocated(original.getLocated());
+        clone.setVehicle(original.getVehicle());
+        clone.setComparatingPrice(original.getComparatingPrice());
+        clone.setDiscount(original.getDiscount());
+        clone.setPrice(original.getPrice());
+        clone.setTotal(original.getTotal());
+        clone.setImageUrls(original.getImageUrls());
+        clone.setDeletedAt(null);
+
+        // 3Nếu tour đang đi (status = 2) → set ngày mới từ ngày mai
+        if (original.getStatus() != null ) {
+            LocalDate tomorrow = LocalDate.now().plusDays(1);
+            LocalDate originalStart = original.getDateTour();
+            LocalDate originalEnd = original.getDateEndTour();
+
+            long daysBetween = 0;
+            if (originalStart != null && originalEnd != null) {
+                daysBetween = java.time.temporal.ChronoUnit.DAYS.between(originalStart, originalEnd);
+            }
+
+            clone.setDateTour(tomorrow);
+            clone.setDateEndTour(tomorrow.plusDays(daysBetween));
+        } else {
+            clone.setDateTour(original.getDateTour());
+            clone.setDateEndTour(original.getDateEndTour());
+        }
+
+        // 4Trạng thái tour mới = 0 (đã hủy)
+        clone.setStatus((byte) 0);
+
+        // 5 Lưu DB
+        Items saved = itemRepository.save(clone);
+
+        // 6Chuyển thành DTO
+        List<String> imageList = new ArrayList<>();
+        try {
+            if (saved.getImageUrls() != null && !saved.getImageUrls().isEmpty()) {
+                imageList = mapper.readValue(saved.getImageUrls(), new TypeReference<List<String>>() {});
+            }
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return new TourDTO(
+                saved.getItemId(),
+                saved.getCategory() != null ? saved.getCategory().getCategoryId() : null,
+                saved.getGuider() != null ? saved.getGuider().getEmployeeId() : null,
+                saved.getTitleTour(),
+                saved.getDescription(),
+                saved.getDateTour(),
+                saved.getDateEndTour(),
+                saved.getLocated(),
+                saved.getVehicle(),
+                saved.getComparatingPrice(),
+                saved.getDiscount(),
+                saved.getPrice(),
+                saved.getTotal(),
+                saved.getStatus(),
+                imageList
+        );
     }
 
 }

@@ -13,4 +13,5 @@ public interface ItemService {
     TourDTO getById(Integer id);
     void deleteMultipe(List<Integer> ids);
 
+    TourDTO cloneTour(Integer id);
 }

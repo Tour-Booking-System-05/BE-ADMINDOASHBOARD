@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -89,15 +90,20 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public void softDelete(Integer id) {
         Categories category = categoriesReporsitory.findByCategoryIdAndDeletedAtIsNull(id);
         if (category == null) {
             throw new RuntimeException("Không tìm thấy danh mục để xóa");
-
         }
+
+        int itemCount = (category.getItems() != null) ? category.getItems().size() : 0;
+        if (itemCount > 0) {
+            throw new RuntimeException("Không thể xóa danh mục này vì vẫn còn " + itemCount + " tour đang liên kết.");
+        }
+
         category.setDeletedAt(LocalDateTime.now());
         categoriesReporsitory.save(category);
-
     }
 
     @Override
@@ -110,12 +116,33 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public void deleteMultipe(List<Integer> ids) {
+    @Transactional
+    public String deleteMultipe(List<Integer> ids) {
         List<Categories> categories = categoriesReporsitory.findAllById(ids);
+        int deletedCount = 0;
+        boolean hasLockedCategory = false;
+
         for (Categories c : categories) {
+            int itemCount = (c.getItems() != null) ? c.getItems().size() : 0;
+
+            if (itemCount > 0) {
+                hasLockedCategory = true;
+                continue; // bỏ qua không xóa
+            }
+
             c.setDeletedAt(LocalDateTime.now());
+            deletedCount++;
         }
+
         categoriesReporsitory.saveAll(categories);
+
+        // Chỉ trả message đơn giản
+        if (hasLockedCategory && deletedCount == 0) {
+            return "Không thể xóa danh mục vì chứa tour đang liên kết.";
+        } else if (hasLockedCategory) {
+            return "Đã xóa các danh mục hợp lệ, một số danh mục không thể xóa vì đang chứa tour.";
+        }
+        return "Xóa danh mục thành công.";
     }
 
     @Override

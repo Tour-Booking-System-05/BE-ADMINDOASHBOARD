@@ -23,13 +23,13 @@ public class CategoryController {
     @Autowired
     private CloudinaryService cloudinaryService;
 
-    // ✅ Lấy danh sách tất cả danh mục
+    //  Lấy danh sách tất cả danh mục
     @GetMapping
 //    Là đối tượng đại diện cho phản hồi HTTP (HTTP response) mà Spring sẽ trả về cho client (bao gồm status code, body, headers, ...).
     public ResponseEntity<Page<CategoryDTO>> getAllCategories(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "categoryId,asc") String[] sort,
+            @RequestParam(defaultValue = "categoryId,desc") String[] sort,
             @RequestParam(required = false) String keyword
     ) {
         Page<CategoryDTO> result = categoryService.getAllCategories(page, size, sort, keyword);
@@ -50,12 +50,23 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.update(id, categoryDTO));
     }
 
-    //    👉 Lấy giá trị từ URL path (đường dẫn) mà người dùng gọi API.
+    //    Lấy giá trị từ URL path (đường dẫn) mà người dùng gọi API.
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Integer id) {
-        categoryService.softDelete(id);
-        return ResponseEntity.ok(("Done" + id));
+    public ResponseEntity<?> deleteCategory(@PathVariable Integer id) {
+        try {
+            categoryService.softDelete(id);
+            return ResponseEntity.ok(Map.of("message", "Xóa danh mục thành công"));
+        } catch (RuntimeException e) {
+            //  Nếu lỗi do chứa tour thì trả về 400 Bad Request với message rõ ràng
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            // Lỗi khác thì vẫn báo chung
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Đã xảy ra lỗi không mong muốn"));
+        }
     }
+
 
     @PostMapping("/upload")
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
@@ -70,17 +81,17 @@ public class CategoryController {
 
     // Xóa nhiều
     @DeleteMapping("/bulk-delete")
-//Còn <?> nghĩa là generic type chưa xác định
     public ResponseEntity<?> deleteMultipe(@RequestBody List<Integer> ids) {
         try {
-            categoryService.deleteMultipe(ids);
-            return ResponseEntity.ok().body("Đã xóa " + ids.size() + " danh mục");
+            String message = categoryService.deleteMultipe(ids);
+            return ResponseEntity.ok(Map.of("message", message));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi khi xóa danh mục: " + e.getMessage());
+                    .body(Map.of("message", "Lỗi khi xóa danh mục: " + e.getMessage()));
         }
-
     }
+
+
     @GetMapping("/all")
     public ResponseEntity<List<CategoryDTO>> getAllCategoriesList() {
         List<CategoryDTO> categories = categoryService.getAllCategoriesList();

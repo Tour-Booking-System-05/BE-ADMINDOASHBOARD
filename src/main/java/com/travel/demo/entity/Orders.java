@@ -21,11 +21,11 @@ public class Orders {
 
 	private LocalDateTime date;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "item_id")
 	private Items item;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private Users user;
 
@@ -34,7 +34,63 @@ public class Orders {
 	@Column(name = "amount_ticket")
 	private Integer amountTicket;
 
-	@Column(name = "delete_at")
+	@Column(name = "deleted_at")
 	private LocalDateTime deleteAt;
+
+	public Integer getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(Integer orderId) {
+		this.orderId = orderId;
+	}
+
+	public LocalDateTime getDate() {
+		return date;
+	}
+
+	public void setDate(LocalDateTime date) {
+		this.date = date;
+	}
+
+	public Items getItem() {
+		return item;
+	}
+
+	public void setItem(Items item) {
+		this.item = item;
+	}
+
+	public Users getUser() {
+		return user;
+	}
+
+	public void setUser(Users user) {
+		this.user = user;
+	}
+
+	public Byte getStatus() {
+		return status;
+	}
+
+	public void setStatus(Byte status) {
+		this.status = status;
+	}
+
+	public Integer getAmountTicket() {
+		return amountTicket;
+	}
+
+	public void setAmountTicket(Integer amountTicket) {
+		this.amountTicket = amountTicket;
+	}
+
+	public LocalDateTime getDeleteAt() {
+		return deleteAt;
+	}
+
+	public void setDeleteAt(LocalDateTime deleteAt) {
+		this.deleteAt = deleteAt;
+	}
 }
 

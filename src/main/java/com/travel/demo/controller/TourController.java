@@ -28,7 +28,7 @@ public class TourController {
     public ResponseEntity<Page<TourDTO>> getAllTour(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "itemId,asc") String[] sort,
+            @RequestParam(defaultValue = "itemId,desc") String[] sort,
             @RequestParam(required = false) String keyword
     ){
         Page<TourDTO> result = itemService.getAllTour(page, size, sort, keyword);
@@ -62,5 +62,12 @@ public class TourController {
     public ResponseEntity<Void> deleteMultiple(@RequestBody List<Integer> ids) {
         itemService.deleteMultipe(ids);
         return ResponseEntity.noContent().build();
+    }
+
+    // API clone tour
+    @PostMapping("/{id}/clone")
+    public ResponseEntity<TourDTO> cloneTour(@PathVariable Integer id) {
+        TourDTO cloned = itemService.cloneTour(id);
+        return ResponseEntity.ok(cloned);
     }
 }

@@ -17,7 +17,7 @@ public interface CategoryService {
     //xoa meem
     void softDelete(Integer id);
     CategoryDTO getById(Integer id);
-    void deleteMultipe(List<Integer> ids);
+    String deleteMultipe(List<Integer> ids);
     List<CategoryDTO> getAllCategoriesList();
 
 }
