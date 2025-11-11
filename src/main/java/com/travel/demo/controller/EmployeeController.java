@@ -6,10 +6,7 @@ import com.travel.demo.service.EmployeesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,4 +22,16 @@ public class EmployeeController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable Integer id) {
+        EmployeeDTO result = employeesService.getEmployeeById(id);
+        return ResponseEntity.ok(result);
+    }
+
+//    // 🔹 Sau này: lấy nhân viên đang đăng nhập (khi có JWT)
+//    @GetMapping("/me")
+//    public ResponseEntity<EmployeeDTO> getCurrentEmployee() {
+//        EmployeeDTO result = employeesService.getCurrentEmployee();
+//        return ResponseEntity.ok(result);
+//    }
 }
