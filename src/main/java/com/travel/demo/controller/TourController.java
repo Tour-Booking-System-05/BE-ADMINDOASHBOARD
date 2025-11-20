@@ -49,7 +49,7 @@ public class TourController {
         return ResponseEntity.ok(itemService.getById(id));
     }
     @PutMapping("/{id}")
-    public ResponseEntity<TourDTO> update(@PathVariable Integer id, @RequestBody TourDTO tourDTO){
+    public ResponseEntity<TourDTO> update(@PathVariable Integer id,@Valid @RequestBody TourDTO tourDTO){
         return ResponseEntity.ok(itemService.update(id, tourDTO));
     }
 

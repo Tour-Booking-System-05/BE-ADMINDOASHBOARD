@@ -44,8 +44,6 @@ public class Promotions {
 
 	@Column(name = "deleted_at")
 	private LocalDate deletedAt;
-
-	// ⚙️ Thêm quan hệ ManyToMany ngược với Users
 	@ManyToMany(mappedBy = "promotions")
 	private Set<Users> users = new HashSet<>();
 }

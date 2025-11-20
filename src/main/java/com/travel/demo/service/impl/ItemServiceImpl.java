@@ -57,7 +57,6 @@ public class ItemServiceImpl implements ItemService {
 
         // 3Lấy ngày hôm nay
 
-        // 4 Map Entity → DTO + Cập nhật trạng thái tự động
         return itemsPage.map(item -> {
 
             // 5Chuyển ảnh JSON → List<String>

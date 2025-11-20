@@ -3,6 +3,7 @@ package com.travel.demo.controller;
 import com.travel.demo.dto.ContentDTO;
 import com.travel.demo.service.CloudinaryService;
 import com.travel.demo.service.ContentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -36,11 +37,11 @@ public class ContentController {
         return ResponseEntity.ok(contentService.getContentById(id));
     }
     @PostMapping
-    public ResponseEntity<ContentDTO> createContent(@RequestBody ContentDTO contentDTO){
+    public ResponseEntity<ContentDTO> createContent(@Valid  @RequestBody ContentDTO contentDTO){
         return ResponseEntity.ok(contentService.createContent(contentDTO));
     }
     @PutMapping("/{id}")
-    public ResponseEntity<ContentDTO> updateContent(@PathVariable Integer id, @RequestBody ContentDTO contentDTO){
+    public ResponseEntity<ContentDTO> updateContent(@PathVariable Integer id, @Valid @RequestBody ContentDTO contentDTO){
         return  ResponseEntity.ok(contentService.updateContent(id, contentDTO));
     }
     @DeleteMapping("/{id}")
@@ -65,7 +66,7 @@ public class ContentController {
             return ResponseEntity.ok(Map.of("message", message));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Lỗi khi xóa danh mục: " + e.getMessage()));
+                    .body(Map.of("message", "Lỗi khi xóa content: " + e.getMessage()));
         }
     }
     @PostMapping("/upload")

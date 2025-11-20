@@ -8,11 +8,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+
 public class Users {
 
 	@Id
@@ -20,27 +16,28 @@ public class Users {
 	@Column(name = "user_id")
 	private Integer userId;
 
-	@Column(nullable = false, unique = true, length = 50)
+	@Column(nullable = false, unique = true, length = 45)
 	private String username;
 
-	@Column(nullable = false, length = 100)
+	@Column(nullable = false, length = 255)
 	private String fullname;
 
 	@Column(name = "date_of_birth")
 	private LocalDate dateOfBirth;
 
-	@Column(name = "phone_number", length = 15)
+	@Column(name = "phone_number", length = 20)
 	private String phoneNumber;
 
-	//  Một user thuộc về một account
+	// user_rank ENUM('BRONZE','SILVER','GOLD','DIAMOND')
+	@Enumerated(EnumType.STRING)
+	@Column(name = "user_rank", nullable = false)
+	private UserRank userRank;
+
+	// Many users → one account
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "account_id", referencedColumnName = "account_id")
 	private Accounts account;
-
-	//  Một user có thể có nhiều review
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<Reviews> reviews = new HashSet<>();
-
+	// MANY TO MANY WITH PROMOTIONS
 	@ManyToMany
 	@JoinTable(
 			name = "user_promotions",
@@ -89,6 +86,14 @@ public class Users {
 		this.phoneNumber = phoneNumber;
 	}
 
+	public UserRank getUserRank() {
+		return userRank;
+	}
+
+	public void setUserRank(UserRank userRank) {
+		this.userRank = userRank;
+	}
+
 	public Accounts getAccount() {
 		return account;
 	}
@@ -97,19 +102,16 @@ public class Users {
 		this.account = account;
 	}
 
-	public Set<Reviews> getReviews() {
-		return reviews;
+	public Users(Integer userId, String username, String fullname, LocalDate dateOfBirth, String phoneNumber, UserRank userRank, Accounts account) {
+		this.userId = userId;
+		this.username = username;
+		this.fullname = fullname;
+		this.dateOfBirth = dateOfBirth;
+		this.phoneNumber = phoneNumber;
+		this.userRank = userRank;
+		this.account = account;
 	}
 
-	public void setReviews(Set<Reviews> reviews) {
-		this.reviews = reviews;
-	}
-
-	public Set<Promotions> getPromotions() {
-		return promotions;
-	}
-
-	public void setPromotions(Set<Promotions> promotions) {
-		this.promotions = promotions;
+	public Users() {
 	}
 }

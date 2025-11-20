@@ -1,9 +1,13 @@
 package com.travel.demo.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import java.time.LocalDateTime;
 public class ContentDTO {
     private Integer contentId;
+    @NotBlank(message = "Tiêu đề  không được để trống")
+    @Size(max = 255, message = "Tiêu đề  vượt quá 255 ký tự")
     private String title;
     private String content;
     private Integer employeeId;
