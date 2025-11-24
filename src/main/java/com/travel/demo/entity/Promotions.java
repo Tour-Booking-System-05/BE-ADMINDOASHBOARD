@@ -8,11 +8,6 @@ import java.util.Set;
 
 @Entity
 @Table(name = "promotions")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Promotions {
 
 	@Id
@@ -46,4 +41,100 @@ public class Promotions {
 	private LocalDate deletedAt;
 	@ManyToMany(mappedBy = "promotions")
 	private Set<Users> users = new HashSet<>();
+
+	public Integer getPromotionId() {
+		return promotionId;
+	}
+
+	public void setPromotionId(Integer promotionId) {
+		this.promotionId = promotionId;
+	}
+
+	public Double getPercentDecrease() {
+		return percentDecrease;
+	}
+
+	public void setPercentDecrease(Double percentDecrease) {
+		this.percentDecrease = percentDecrease;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public Categories getCategory() {
+		return category;
+	}
+
+	public void setCategory(Categories category) {
+		this.category = category;
+	}
+
+	public LocalDate getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(LocalDate startDate) {
+		this.startDate = startDate;
+	}
+
+	public LocalDate getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(LocalDate endDate) {
+		this.endDate = endDate;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public LocalDate getDeletedAt() {
+		return deletedAt;
+	}
+
+	public void setDeletedAt(LocalDate deletedAt) {
+		this.deletedAt = deletedAt;
+	}
+
+	public Set<Users> getUsers() {
+		return users;
+	}
+
+	public void setUsers(Set<Users> users) {
+		this.users = users;
+	}
+
+	public Promotions(Integer promotionId, Double percentDecrease, String code, Categories category, LocalDate startDate, LocalDate endDate, String title, String description, LocalDate deletedAt, Set<Users> users) {
+		this.promotionId = promotionId;
+		this.percentDecrease = percentDecrease;
+		this.code = code;
+		this.category = category;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.title = title;
+		this.description = description;
+		this.deletedAt = deletedAt;
+		this.users = users;
+	}
+
+	public Promotions() {
+	}
 }

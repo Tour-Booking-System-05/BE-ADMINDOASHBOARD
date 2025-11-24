@@ -94,10 +94,10 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public TourDTO create(TourDTO tourDTO) {
         Categories category = categoryRepository.findByCategoryIdAndStatusAndDeletedAtIsNull(tourDTO.getCategoryId(), true)
-                .orElseThrow(() -> new RuntimeException("Category not found or inactive"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy category"));
 
         Employees guider = employeeRepository.findById(tourDTO.getGuiderId()) .
-                orElseThrow(() -> new RuntimeException("Employee not found"));
+                orElseThrow(() -> new RuntimeException("Không tìm thấy hướng dẫn viên"));
 
         Items items = new Items();
         items.setCategory(category);
