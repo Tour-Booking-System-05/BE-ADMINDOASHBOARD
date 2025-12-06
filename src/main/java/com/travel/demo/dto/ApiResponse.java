@@ -1,8 +1,8 @@
 package com.travel.demo.dto;
 
-public class ApiResponse {
+public class ApiResponse <T>{
     String message;
-    ResponseLogin data;
+     T data; // 👈 Tự động nhận mọi kiểu DTO
 
     public String getMessage() {
         return message;
@@ -12,11 +12,11 @@ public class ApiResponse {
         this.message = message;
     }
 
-    public Object getData() {
+    public T getData() {        // 👈 Trả về đúng kiểu T
         return data;
     }
 
-    public void setData(ResponseLogin data) {
+    public void setData(T data) {   // 👈 Nhận đúng kiểu T
         this.data = data;
     }
 }

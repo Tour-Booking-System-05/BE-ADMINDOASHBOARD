@@ -6,10 +6,24 @@ import lombok.Data;
 
 @Data
 public class ResponseLogin {
-
-    private String email;
-
     private int id;
+    private String email;
+    private String token;
+    private String type = "Bearer";
+
+    public ResponseLogin(int id, String email, String token) {
+        this.id = id;
+        this.email = email;
+        this.token = token;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getEmail() {
         return email;
@@ -19,11 +33,19 @@ public class ResponseLogin {
         this.email = email;
     }
 
-    public int getId() {
-        return id;
+    public String getToken() {
+        return token;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

@@ -8,6 +8,7 @@ import com.travel.demo.repository.EmployeesRepository;
 import com.travel.demo.service.ContentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -79,12 +80,6 @@ public class ContentServiceImpl implements ContentService {
         contents.setCreateAt(LocalDateTime.now());
         contents.setPublishedAt(contentDTO.getPublishedAt());
 
-        // TẠM THỜI: GÁN NHÂN VIÊN MẶC ĐỊNH ID = 1
-        // (vì hệ thống CHƯA có đăng nhập)
-        // --------------------------------------------
-        Employees employee = employeesRepository.findById(1)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên mặc định!"));
-        contents.setEmployee(employee);
 
         /*
         SAU NÀY KHI CÓ LOGIN:
@@ -95,7 +90,13 @@ public class ContentServiceImpl implements ContentService {
         Employees employee = employeesRepository.findByAccountUsername(username);
         contents.setEmployee(employee);
         */
+        // 🔥 LẤY EMAIL ĐANG ĐĂNG NHẬP TỪ JWT
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
+        Employees employee = employeesRepository.findByAccountEmail(email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên đang đăng nhập!"));
+
+        contents.setEmployee(employee);
         Contents saved = contentRepository.save(contents);
 
         ContentDTO result = new ContentDTO();

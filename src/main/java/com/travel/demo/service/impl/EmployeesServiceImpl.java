@@ -6,6 +6,7 @@ import com.travel.demo.entity.Role;
 import com.travel.demo.repository.EmployeesRepository;
 import com.travel.demo.service.EmployeesService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -63,19 +64,21 @@ public class EmployeesServiceImpl implements EmployeesService {
     //  (Sau này) Lấy nhân viên đang đăng nhập
     @Override
     public EmployeeDTO getCurrentEmployee() {
-        /*
-         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-         Employees e = employeesRepository.findByAccountUsername(username);
-         return new EmployeeDTO(
-             e.getEmployeeId(),
-             e.getFullName(),
-             e.getPhoneNumber(),
-             e.getGender() != null ? e.getGender().name() : null,
-             e.getAccount().getRoleEntity().getName()
-         );
-        */
+        // 🔥 Lấy email từ JWT token đã được Spring Security giải mã
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        // 🔹 Tạm thời: trả về nhân viên mặc định ID = 1
-        return getEmployeeById(1);
+        Employees e = employeesRepository.findByAccountEmail(email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên đang đăng nhập!"));
+
+        return new EmployeeDTO(
+                e.getEmployeeId(),
+                e.getFullName(),
+                e.getPhoneNumber(),
+                e.getGender() != null ? e.getGender().name() : null,
+                e.getAccount() != null && e.getAccount().getRoleEntity() != null
+                        ? e.getAccount().getRoleEntity().getName()
+                        : null
+        );
     }
+
 }

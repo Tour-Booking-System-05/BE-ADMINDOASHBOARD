@@ -18,6 +18,7 @@ public interface EmployeesRepository extends JpaRepository<Employees, Integer> {
     Optional<Employees> findById(Integer id);
     @Query("SELECT e FROM Employees e JOIN Users u ON u.account.accountId = e.account.accountId WHERE u.username = :username")
     Employees findByUserUsername(String username);
+    Optional<Employees> findByAccountEmail(String email);
 
 
 }
