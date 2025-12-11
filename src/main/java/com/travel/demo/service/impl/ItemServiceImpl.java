@@ -42,7 +42,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public Page<TourDTO> getAllTour(int page, int size, String[] sort, String keyword) {
-
         // 1 Xác định hướng sắp xếp
         Sort.Direction direction = Sort.Direction.fromString(sort[1]);
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
