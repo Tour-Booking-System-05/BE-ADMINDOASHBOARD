@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OrderRepository extends JpaRepository<Orders, Integer> {
     Page<Orders> findByItem_TitleTourContainingIgnoreCase(String keyword, Pageable pageable);
+    Page<Orders> findByItem_Guider_EmployeeIdAndDeleteAtIsNull(Integer guiderId, Pageable pageable);
 
 }

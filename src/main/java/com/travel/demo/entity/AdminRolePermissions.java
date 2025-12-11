@@ -26,4 +26,12 @@ public class AdminRolePermissions {
     @MapsId("adminPermissionId")
     @JoinColumn(name = "admin_permission_id")
     private AdminPermissions adminPermission;
+
+    public AdminPermissions getAdminPermission() {
+        return adminPermission;
+    }
+
+    public void setAdminPermission(AdminPermissions adminPermission) {
+        this.adminPermission = adminPermission;
+    }
 }

@@ -6,6 +6,7 @@ public class EmployeeDTO {
     private String phoneNumber;
     private String gender;
     private String roleName;
+    private Integer roleId;
 
     public EmployeeDTO(Integer employeeId, String fullName, String phoneNumber, String gender, String roleName) {
         this.employeeId = employeeId;
@@ -53,5 +54,22 @@ public class EmployeeDTO {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public EmployeeDTO(Integer employeeId, String fullName, String phoneNumber, String gender, String roleName, Integer roleId) {
+        this.employeeId = employeeId;
+        this.fullName = fullName;
+        this.phoneNumber = phoneNumber;
+        this.gender = gender;
+        this.roleName = roleName;
+        this.roleId = roleId;
+    }
+
+    public Integer getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(Integer roleId) {
+        this.roleId = roleId;
     }
 }

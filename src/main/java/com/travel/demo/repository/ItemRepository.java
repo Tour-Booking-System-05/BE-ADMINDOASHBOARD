@@ -14,5 +14,7 @@ public interface ItemRepository extends JpaRepository<Items, Integer> {
     Page<Items> findByTitleTourContainingIgnoreCaseAndDeletedAtIsNull(String itemName, Pageable pageable);
     Page<Items> findAll(Pageable pageable);
     List<Items> findByDeletedAtIsNull();
+    Page<Items> findByGuider_EmployeeIdAndDeletedAtIsNull(Integer guiderId, Pageable pageable);
+
 }
 

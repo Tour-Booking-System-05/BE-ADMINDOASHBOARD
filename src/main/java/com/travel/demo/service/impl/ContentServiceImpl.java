@@ -81,15 +81,7 @@ public class ContentServiceImpl implements ContentService {
         contents.setPublishedAt(contentDTO.getPublishedAt());
 
 
-        /*
-        SAU NÀY KHI CÓ LOGIN:
-        - Sử dụng Spring Security để lấy user đang đăng nhập
-        - Ví dụ:
 
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        Employees employee = employeesRepository.findByAccountUsername(username);
-        contents.setEmployee(employee);
-        */
         // 🔥 LẤY EMAIL ĐANG ĐĂNG NHẬP TỪ JWT
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 

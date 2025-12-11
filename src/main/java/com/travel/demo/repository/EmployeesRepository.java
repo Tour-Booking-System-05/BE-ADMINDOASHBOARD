@@ -19,6 +19,13 @@ public interface EmployeesRepository extends JpaRepository<Employees, Integer> {
     @Query("SELECT e FROM Employees e JOIN Users u ON u.account.accountId = e.account.accountId WHERE u.username = :username")
     Employees findByUserUsername(String username);
     Optional<Employees> findByAccountEmail(String email);
+    Optional<Employees> findByAccount_AccountId(Integer accountId);
+    List<Employees> findByAccount_DeletedAtIsNull();
+    Page<Employees> findByAccount_DeleteAtIsNull(Pageable pageable);
 
-
+    // Lọc thêm theo tên (search)
+    Page<Employees> findByAccount_DeleteAtIsNullAndFullNameContainingIgnoreCase(
+            String fullName,
+            Pageable pageable
+    );
 }
