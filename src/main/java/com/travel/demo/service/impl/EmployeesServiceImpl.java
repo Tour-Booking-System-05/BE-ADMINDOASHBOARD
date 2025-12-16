@@ -7,6 +7,7 @@ import com.travel.demo.entity.*;
 import com.travel.demo.repository.AccountRepository;
 import com.travel.demo.repository.EmployeesRepository;
 import com.travel.demo.repository.RolesRepository;
+import com.travel.demo.service.EmailService;
 import com.travel.demo.service.EmployeesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,7 +34,8 @@ public class EmployeesServiceImpl implements EmployeesService {
     private AccountRepository accountsRepository;
     @Autowired
     private RolesRepository rolesRepository;
-
+    @Autowired
+    private EmailService emailService;
     // 🔹 Lấy danh sách nhân viên có role_id = 2 (ví dụ hướng dẫn viên)
     @Override
     public List<EmployeeDTO> getAdminsWithRoleId2() {
@@ -41,16 +46,10 @@ public class EmployeesServiceImpl implements EmployeesService {
                         e.getAccount() != null &&
                                 e.getAccount().getRoleEntity() != null &&
                                 e.getAccount().getDeleteAt() == null &&
-                                e.getAccount().getRoleEntity().getRoleId() == 2 &&
+                                e.getAccount().getRoleEntity().getRoleId() == 5 &&
                                 e.getAccount().getRole() == Role.ADMIN
                 )
-                .map(e -> new EmployeeDTO(
-                        e.getEmployeeId(),
-                        e.getFullName(),
-                        e.getPhoneNumber(),
-                        e.getGender() != null ? e.getGender().name() : null,
-                        e.getAccount().getRoleEntity().getName()
-                ))
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -73,57 +72,107 @@ public class EmployeesServiceImpl implements EmployeesService {
         Employees e = employeesRepository.findByAccountEmail(email)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên đang đăng nhập!"));
 
-        return new EmployeeDTO(
-                e.getEmployeeId(),
-                e.getFullName(),
-                e.getPhoneNumber(),
-                e.getGender() != null ? e.getGender().name() : null,
-                e.getAccount() != null && e.getAccount().getRoleEntity() != null
-                        ? e.getAccount().getRoleEntity().getName()
-                        : null
-        );
+        return toDTO(e);
     }
     // ====== MAPPER ======
     private EmployeeDTO toDTO(Employees e) {
+        String email = (e.getAccount() != null) ? e.getAccount().getEmail() : null;
+        String roleName = (e.getAccount() != null && e.getAccount().getRoleEntity() != null)
+                ? e.getAccount().getRoleEntity().getName()
+                : null;
+        Integer roleId = (e.getAccount() != null && e.getAccount().getRoleEntity() != null)
+                ? e.getAccount().getRoleEntity().getRoleId()
+                : null;
+        Accounts acc = e.getAccount();
+        String accountStatus = (acc != null && acc.getStatus() != null) ? acc.getStatus().name() : null;
+
         return new EmployeeDTO(
                 e.getEmployeeId(),
                 e.getFullName(),
                 e.getPhoneNumber(),
                 e.getGender() != null ? e.getGender().name() : null,
-                e.getAccount() != null && e.getAccount().getRoleEntity() != null
-                        ? e.getAccount().getRoleEntity().getName()
-                        : null,
-                e.getAccount() != null && e.getAccount().getRoleEntity() != null
-                        ? e.getAccount().getRoleEntity().getRoleId()
-                        : null
+                roleName,
+                roleId,
+                email,
+                e.getDateOfBirth(),
+                accountStatus
         );
     }
     @Override
     public EmployeeDTO createEmployee(EmployeeCreateRequest request) {
-        if (accountsRepository.findByEmail(request.getEmail()) != null) {
+        Accounts existAcc = accountsRepository.findByEmail(request.getEmail());
+
+        if (accountsRepository.findByEmailAndRole(request.getEmail(), Role.ADMIN) != null) {
             throw new RuntimeException("Email đã tồn tại!");
         }
 
+
         Roles role = rolesRepository.findById(request.getRoleId())
                 .orElseThrow(() -> new RuntimeException("Role không tồn tại"));
+
+        String rawPassword = generateStrongPassword();
+
+        // ================= ACCOUNT =================
         Accounts acc = new Accounts();
         acc.setEmail(request.getEmail());
-        acc.setPassword(request.getPassword());
+        acc.setPassword(rawPassword);
         acc.setRole(Role.ADMIN);
         acc.setRoleEntity(role);
+        acc.setStatus(
+                request.getStatus() != null
+                        ? AccountStatus.valueOf(request.getStatus())
+                        : AccountStatus.ACTIVE
+        );
+
         accountsRepository.save(acc);
 
+        // ================= EMPLOYEE =================
         Employees emp = new Employees();
         emp.setFullName(request.getFullName());
         emp.setPhoneNumber(request.getPhoneNumber());
         emp.setDateOfBirth(request.getDateOfBirth());
-        emp.setGender(Gender.valueOf(request.getGender()));
-        emp.setDescription(request.getDescription());
+        emp.setGender(
+                request.getGender() != null
+                        ? Gender.valueOf(request.getGender())
+                        : null
+        );
         emp.setAccount(acc);
 
         employeesRepository.save(emp);
 
+        // ================= SEND EMAIL =================
+        emailService.sendCreateAccount(
+                acc.getEmail(),
+                rawPassword
+        );
+
         return toDTO(emp);
+    }
+
+    private String generateStrongPassword() {
+        String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lower = "abcdefghijklmnopqrstuvwxyz";
+        String digits = "0123456789";
+        String special = "!@#$%^&*()_+";
+
+        SecureRandom random = new SecureRandom();
+        List<Character> chars = new ArrayList<>();
+
+        chars.add(upper.charAt(random.nextInt(upper.length())));
+        chars.add(lower.charAt(random.nextInt(lower.length())));
+        chars.add(digits.charAt(random.nextInt(digits.length())));
+        chars.add(special.charAt(random.nextInt(special.length())));
+
+        String all = upper + lower + digits + special;
+        for (int i = 0; i < 2; i++) {
+            chars.add(all.charAt(random.nextInt(all.length())));
+        }
+
+        Collections.shuffle(chars);
+
+        return chars.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining());
     }
 
     @Override
@@ -179,4 +228,24 @@ public class EmployeesServiceImpl implements EmployeesService {
 
         }
     }
+
+    @Override
+    public String resetPassword(Integer employeeId) {
+
+        Employees emp = employeesRepository
+                .findByEmployeeIdAndAccount_DeleteAtIsNull(employeeId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
+
+        Accounts acc = emp.getAccount();
+
+        String newPass = generateStrongPassword();
+        acc.setPassword(newPass);
+        accountsRepository.save(acc);
+
+        emailService.sendResetPasswordEmail(acc.getEmail(), newPass);
+
+        return newPass;
+    }
+
+
 }

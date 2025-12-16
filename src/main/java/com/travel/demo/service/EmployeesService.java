@@ -19,4 +19,6 @@ public interface EmployeesService {
     EmployeeDTO updateEmployee(Integer id, EmployeeUpdateRequest request);
 
     void deleteEmployee(Integer id);
+    String resetPassword(Integer id);
+
 }

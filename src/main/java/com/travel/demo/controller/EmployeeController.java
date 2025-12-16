@@ -25,11 +25,11 @@ public class EmployeeController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable Integer id) {
-        EmployeeDTO result = employeesService.getEmployeeById(id);
-        return ResponseEntity.ok(result);
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable Integer id) {
+//        EmployeeDTO result = employeesService.getEmployeeById(id);
+//        return ResponseEntity.ok(result);
+//    }
 
     @PostMapping
     @PreAuthorize("@permissionChecker.hasPermission(authentication,'EMPLOYEE_MANAGE')")
@@ -74,5 +74,11 @@ public class EmployeeController {
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         employeesService.deleteEmployee(id);
         return ResponseEntity.noContent().build();
+    }
+    @PutMapping("/{id}/reset-password")
+    public ResponseEntity<?> resetPassword(@PathVariable Integer id) {
+        String newPass = employeesService.resetPassword(id);
+        return ResponseEntity.ok("Cập nhập mật khẩu thành công"
+        );
     }
 }

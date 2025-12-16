@@ -12,13 +12,11 @@ public class EmployeeCreateRequest {
     private Integer roleId;
     private LocalDate dateOfBirth;
     private String description;
-
+    private String status;
     public EmployeeCreateRequest() {
     }
 
-    public EmployeeCreateRequest(String fullName, String phoneNumber, String gender,
-                                 String email, String password, Integer roleId,
-                                 LocalDate dateOfBirth, String description) {
+    public EmployeeCreateRequest(String fullName, String phoneNumber, String gender, String email, String password, Integer roleId, LocalDate dateOfBirth, String description, String status) {
         this.fullName = fullName;
         this.phoneNumber = phoneNumber;
         this.gender = gender;
@@ -27,9 +25,16 @@ public class EmployeeCreateRequest {
         this.roleId = roleId;
         this.dateOfBirth = dateOfBirth;
         this.description = description;
+        this.status = status;
     }
 
-    // ===== GETTERS & SETTERS =====
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public String getFullName() {
         return fullName;

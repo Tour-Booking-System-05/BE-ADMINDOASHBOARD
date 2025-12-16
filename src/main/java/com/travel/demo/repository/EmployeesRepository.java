@@ -20,8 +20,8 @@ public interface EmployeesRepository extends JpaRepository<Employees, Integer> {
     Employees findByUserUsername(String username);
     Optional<Employees> findByAccountEmail(String email);
     Optional<Employees> findByAccount_AccountId(Integer accountId);
-    List<Employees> findByAccount_DeletedAtIsNull();
     Page<Employees> findByAccount_DeleteAtIsNull(Pageable pageable);
+    Optional<Employees> findByEmployeeIdAndAccount_DeleteAtIsNull(Integer employeeId);
 
     // Lọc thêm theo tên (search)
     Page<Employees> findByAccount_DeleteAtIsNullAndFullNameContainingIgnoreCase(

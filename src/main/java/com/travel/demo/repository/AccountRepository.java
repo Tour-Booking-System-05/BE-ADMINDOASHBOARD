@@ -1,6 +1,7 @@
 package com.travel.demo.repository;
 
 import com.travel.demo.entity.Accounts;
+import com.travel.demo.entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -34,4 +35,6 @@ public interface AccountRepository extends JpaRepository<Accounts, Integer> {
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to
     );
+    Accounts findByEmailAndRole(String email, Role role);
+
 }

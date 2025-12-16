@@ -1,5 +1,9 @@
 package com.travel.demo.dto;
 
+import com.travel.demo.entity.AccountStatus;
+
+import java.time.LocalDate;
+
 public class EmployeeDTO {
     private Integer employeeId;
     private String fullName;
@@ -7,13 +11,28 @@ public class EmployeeDTO {
     private String gender;
     private String roleName;
     private Integer roleId;
+    private String email;
+    private LocalDate dateOfBirth;
+    private String  accountStatus;
 
-    public EmployeeDTO(Integer employeeId, String fullName, String phoneNumber, String gender, String roleName) {
+    public EmployeeDTO(Integer employeeId, String fullName, String phoneNumber, String gender, String roleName, Integer roleId, String email, LocalDate dateOfBirth, String accountStatus) {
         this.employeeId = employeeId;
         this.fullName = fullName;
         this.phoneNumber = phoneNumber;
         this.gender = gender;
         this.roleName = roleName;
+        this.roleId = roleId;
+        this.email = email;
+        this.dateOfBirth = dateOfBirth;
+        this.accountStatus = accountStatus;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
     public Integer getEmployeeId() {
@@ -72,4 +91,20 @@ public class EmployeeDTO {
     public void setRoleId(Integer roleId) {
         this.roleId = roleId;
     }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    public String getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(String accountStatus) {
+        this.accountStatus = accountStatus;
+    }
+
 }
