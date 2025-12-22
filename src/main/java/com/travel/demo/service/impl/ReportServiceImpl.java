@@ -65,7 +65,7 @@ public class ReportServiceImpl implements ReportService {
                 revenue.setValue(BigDecimal.valueOf(thisMonthTotal).setScale(0, RoundingMode.HALF_UP));
                 revenue.setPercent(calculateGrowth(thisMonthTotal, lastMonthTotal));
             }
-            if (filter.equals("Year")) {
+            else if (filter.equals("Year")) {
                 double todayTotal = orderRepository.totalRevenue(startThisYear, startNextYear);
                 double yesterdayTotal = orderRepository.totalRevenue(startLastYear, startThisYear);
                 revenue.setValue(BigDecimal.valueOf(todayTotal).setScale(0, RoundingMode.HALF_UP));
@@ -91,10 +91,17 @@ public class ReportServiceImpl implements ReportService {
     }
     private double calculateGrowth(double current, double previous) {
         if (Math.abs(previous) < EPS) {
-            return current > 0 ? 100.0 : 0.0;
+            return current > 0 ? 100.00 : 0.00;
         }
-        return ((double) (current - previous) / previous) * 100;
+
+        double raw = ((current - previous) / previous) * 100;
+
+        return BigDecimal
+                .valueOf(raw)
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
     }
+
 
 
 
@@ -111,7 +118,7 @@ public class ReportServiceImpl implements ReportService {
                 orderTotals.setValue(BigDecimal.valueOf(thisMonthTotal).setScale(0, RoundingMode.HALF_UP));
                 orderTotals.setPercent(calculateGrowth(thisMonthTotal, lastMonthTotal));
             }
-            if (filter.equals("Year")) {
+            else if (filter.equals("Year")) {
                 double todayTotal = orderRepository.countOrder(startThisYear, startNextYear);
                 double yesterdayTotal = orderRepository.countOrder(startLastYear, startThisYear);
                 orderTotals.setValue(BigDecimal.valueOf(todayTotal).setScale(0, RoundingMode.HALF_UP));
@@ -141,7 +148,7 @@ public class ReportServiceImpl implements ReportService {
                 orderTotals.setValue(BigDecimal.valueOf(thisMonthTotal).setScale(0, RoundingMode.HALF_UP));
                 orderTotals.setPercent(calculateGrowth(thisMonthTotal, lastMonthTotal));
             }
-            if (filter.equals("Year")) {
+            else if (filter.equals("Year")) {
                 double todayTotal = accountRepository.countUserBetween(startThisYear, startNextYear);
                 double yesterdayTotal = accountRepository.countUserBetween(startLastYear, startThisYear);
                 orderTotals.setValue(BigDecimal.valueOf(todayTotal).setScale(0, RoundingMode.HALF_UP));

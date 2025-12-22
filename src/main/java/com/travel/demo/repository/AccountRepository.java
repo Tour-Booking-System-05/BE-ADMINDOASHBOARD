@@ -37,4 +37,22 @@ public interface AccountRepository extends JpaRepository<Accounts, Integer> {
     );
     Accounts findByEmailAndRole(String email, Role role);
 
+    @Query("""
+        select distinct a
+        from Accounts a
+        left join fetch a.roleEntity r
+        left join fetch r.adminRolePermissions arp
+        left join fetch arp.adminPermission p
+        where a.email = :email
+    """)
+    Accounts findByEmailWithPermissions(@Param("email") String email);
+    @Query("""
+        select a
+        from Accounts a
+        join fetch a.roleEntity r
+        where a.role = com.travel.demo.entity.Role.ADMIN
+          and r.roleId = 1
+          and a.email is not null
+    """)
+    List<Accounts> findAdminRoleId1();
 }

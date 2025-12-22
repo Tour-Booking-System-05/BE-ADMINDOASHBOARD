@@ -1,13 +1,14 @@
 package com.travel.demo.dto;
 
-import com.travel.demo.entity.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderStatusReportDTO {
-    private OrderStatus orderStatus;
-    private Integer quantity;
+public class CustomerVipDTO {
+    private long bronze;
+    private long silver;
+    private long gold;
+    private long diamond;
 }

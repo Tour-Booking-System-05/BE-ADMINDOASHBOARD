@@ -6,6 +6,11 @@ import com.travel.demo.entity.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 public interface UserRepository extends JpaRepository<Users, Integer> {
 
@@ -30,5 +35,45 @@ public interface UserRepository extends JpaRepository<Users, Integer> {
             boolean isAdminRoot,
             Pageable pageable
     );
+    @Query("""
+    select count(distinct o.user.userId)
+    from Orders o
+    where o.date >= :from
+      and o.date < :to
+      and o.deleteAt is null
+""")
+    Long countNewCustomers(@Param("from") LocalDateTime from,
+                           @Param("to") LocalDateTime to);
+
+
+    // trả về: y, m, total
+    @Query("""
+    select year(a.createAt), month(a.createAt), count(u)
+    from Users u
+    join u.account a
+    where a.role = com.travel.demo.entity.Role.USER
+      and a.createAt >= :from
+      and a.createAt < :to
+    group by year(a.createAt), month(a.createAt)
+    order by year(a.createAt), month(a.createAt)
+""")
+    List<Object[]> customersByMonth(@Param("from") LocalDateTime from,
+                                    @Param("to") LocalDateTime to);
+
+
+    // NORMAL, BRONZE, SILVER, GOLD, DIAMOND (JPQL)
+    @Query("""
+    select
+      0,
+      sum(case when u.userRank = com.travel.demo.entity.UserRank.BRONZE then 1 else 0 end),
+      sum(case when u.userRank = com.travel.demo.entity.UserRank.SILVER then 1 else 0 end),
+      sum(case when u.userRank = com.travel.demo.entity.UserRank.GOLD then 1 else 0 end),
+      sum(case when u.userRank = com.travel.demo.entity.UserRank.DIAMOND then 1 else 0 end)
+    from Users u
+""")
+    List<Object[]> countVipLevels();
+
+
+
 }
 

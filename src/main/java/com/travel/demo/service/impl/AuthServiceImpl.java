@@ -9,6 +9,7 @@ import com.travel.demo.repository.EmployeesRepository;
 import com.travel.demo.security.JwtUtil;
 import com.travel.demo.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,9 +56,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public MeResponse getMe() {
 
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        Accounts account = accountRepository.findByEmail(email);
+        String email = null;
+        if (auth != null && auth.getPrincipal() instanceof Accounts acc) {
+            email = acc.getEmail();
+        }
+
+        Accounts account = accountRepository.findByEmailWithPermissions(email);
         if (account == null) throw new RuntimeException("Tài khoản không tồn tại");
 
         Employees employee = employeesRepository.findByAccountEmail(email).orElse(null);

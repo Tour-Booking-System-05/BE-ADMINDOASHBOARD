@@ -1,5 +1,6 @@
 package com.travel.demo.service.impl;
 
+import com.travel.demo.dto.StatisticDTO;
 import com.travel.demo.service.EmailService;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,10 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Async
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -129,5 +134,77 @@ public class EmailServiceImpl implements EmailService {
             throw new RuntimeException("Lỗi gửi email tạo tài khoản: " + e.getMessage());
         }
     }
+    @Override
+    public void sendStatisticReportEmail(String to, StatisticDTO kpi, int range) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            String today = LocalDate.now()
+                    .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+            helper.setTo(to);
+            helper.setSubject("Báo cáo thống kê ngày " + today);
+
+            String revenue = String.format("%,d ₫", kpi.getRevenue()).replace(',', '.');
+            String cancelRatePct = String.format("%.2f", kpi.getCancelRate() * 100);
+
+            String html = """
+<div style="font-family: Arial, sans-serif; padding: 24px; background: #f7f7f7;">
+  <div style="max-width: 720px; margin: auto; background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 0 10px rgba(0,0,0,0.08);">
+    <h2 style="margin:0; color:#2b7cff;">Báo cáo thống kê tự động</h2>
+    <p style="margin-top:6px; color:#666;">
+      Thời gian báo cáo: <b>%s</b>
+    </p>
+
+    <hr style="border:none; border-top:1px solid #eee; margin:16px 0;"/>
+
+    <h3>KPI</h3>
+    <ul style="line-height: 1.9;">
+      <li><b>Doanh thu:</b> %s</li>
+      <li><b>Đơn đặt:</b> %d</li>
+      <li><b>Khách hàng:</b> %d</li>
+      <li><b>Tỉ lệ huỷ:</b> %s%%</li>
+    </ul>
+
+    <h3>%% thay đổi so với ngày trước</h3>
+    <ul style="line-height: 1.9;">
+      <li>Doanh thu: <b>%s%%</b></li>
+      <li>Đơn đặt: <b>%s%%</b></li>
+      <li>Khách hàng: <b>%s%%</b></li>
+      <li>Tỉ lệ huỷ: <b>%s%%</b></li>
+    </ul>
+
+    <p style="color:#888; font-size: 12px; margin-top: 18px;">
+      Email được gửi tự động từ hệ thống Travel Admin.
+    </p>
+  </div>
+</div>
+""".formatted(
+                    today,
+                    revenue,
+                    kpi.getOrders(),
+                    kpi.getCustomers(),
+                    cancelRatePct,
+                    fmtPct(kpi.getRevenueChangePct()),
+                    fmtPct(kpi.getOrdersChangePct()),
+                    fmtPct(kpi.getCustomersChangePct()),
+                    fmtPct(kpi.getCancelRateChangePct())
+            );
+
+
+            helper.setText(html, true);
+            javaMailSender.send(message);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi gửi email báo cáo: " + e.getMessage(), e);
+        }
+    }
+
+    private String fmtPct(Double v) {
+        if (v == null) return "0.00";
+        return String.format("%.2f", v);
+    }
+
 
 }

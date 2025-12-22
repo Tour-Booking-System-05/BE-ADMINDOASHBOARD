@@ -28,7 +28,6 @@ public class PermissionChecker {
                 .stream()
                 .anyMatch(arp -> arp.getAdminPermission().getName().equals(permissionName));
     }
-    }
-
+}
 
 

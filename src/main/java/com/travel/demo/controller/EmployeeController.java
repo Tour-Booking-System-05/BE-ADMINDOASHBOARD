@@ -25,11 +25,6 @@ public class EmployeeController {
         return ResponseEntity.ok(result);
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable Integer id) {
-//        EmployeeDTO result = employeesService.getEmployeeById(id);
-//        return ResponseEntity.ok(result);
-//    }
 
     @PostMapping
     @PreAuthorize("@permissionChecker.hasPermission(authentication,'EMPLOYEE_MANAGE')")

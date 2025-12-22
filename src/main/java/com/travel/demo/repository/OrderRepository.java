@@ -1,6 +1,7 @@
 package com.travel.demo.repository;
 
 import com.travel.demo.dto.WeeklyRevenueReportDTO;
+import com.travel.demo.entity.OrderStatus;
 import com.travel.demo.entity.Orders;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,14 +19,15 @@ public interface OrderRepository extends JpaRepository<Orders, Integer> {
     Page<Orders> findByItem_TitleTourContainingIgnoreCase(String keyword, Pageable pageable);
     Page<Orders> findByItem_Guider_EmployeeIdAndDeleteAtIsNull(Integer guiderId, Pageable pageable);
 
-    @Query("Select COALESCE(SUM(i.price * o.amountTicket), 0) " +
-            "from Orders o join Items i on o.item.itemId = i.itemId " +
-            "where o.status = 2 " +
-            "and o.deleteAt is null " +
-            "and o.date >= :start " +
-            "and o.date <= :end ")
-    Double totalRevenue(@Param(value = "start") LocalDateTime start,
-                        @Param(value = "end") LocalDateTime end);
+    @Query("""
+    select coalesce(sum(o.item.price * o.amountTicket), 0)
+    from Orders o
+    where o.date >= :from
+      and o.date <= :to
+      and o.deleteAt is null
+""")
+    Long totalRevenue(@Param("from") LocalDateTime from,
+                           @Param("to") LocalDateTime to);
 
     @Query("Select COUNT(o.orderId) from Orders o " +
             "where o.status = 2 " +
@@ -51,4 +53,71 @@ public interface OrderRepository extends JpaRepository<Orders, Integer> {
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to
     );
+
+    @Query("""
+    select coalesce(sum(o.item.price * o.amountTicket), 0)
+    from Orders o
+    where o.date >= :from
+      and o.date < :to
+      and o.deleteAt is null
+""")
+    Long sumRevenue(@Param("from") LocalDateTime from,
+                    @Param("to") LocalDateTime to);
+
+    @Query("""
+    select count(o.orderId)
+    from Orders o
+    where o.date >= :from
+      and o.date < :to
+      and o.deleteAt is null
+""")
+    Long countOrders(@Param("from") LocalDateTime from,
+                     @Param("to") LocalDateTime to);
+
+    @Query("""
+    select count(o.orderId)
+    from Orders o
+    where o.date >= :from
+      and o.date < :to
+      and o.status = :status
+      and o.deleteAt is null
+""")
+    Long countByStatus(@Param("from") LocalDateTime from,
+                       @Param("to") LocalDateTime to,
+                       @Param("status") Byte status);
+
+
+    // trả về: status, count
+    @Query("""
+    select o.status, count(o.orderId)
+    from Orders o
+    where o.date >= :from
+      and o.date < :to
+      and o.deleteAt is null
+    group by o.status
+""")
+    List<Object[]> groupCountByStatus(@Param("from") LocalDateTime from,
+                                      @Param("to") LocalDateTime to);
+
+
+    // MySQL: year/month
+    // trả về: y, m, revenue
+    @Query(value = """
+    select
+        year(o.date) as y,
+        month(o.date) as m,
+        coalesce(sum(i.price * o.amount_ticket), 0) as revenue
+    from orders o
+    join items i on o.item_id = i.item_id
+    where o.date >= :from
+      and o.date < :to
+      and o.deleted_at is null
+    group by year(o.date), month(o.date)
+    order by year(o.date), month(o.date)
+""", nativeQuery = true)
+    List<Object[]> revenueByMonth(@Param("from") LocalDateTime from,
+                                  @Param("to") LocalDateTime to);
+
+
+
 }
