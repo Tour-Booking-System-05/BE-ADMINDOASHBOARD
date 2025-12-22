@@ -61,6 +61,7 @@ Dự án cung cấp các API quản trị cho việc quản lý **tour, đơn h�
 
 ## 🧱 Kiến trúc tổng thể
 
+
 Controller → Service → Repository → Database
 ↑
 AOP (Activity Log)
@@ -85,9 +86,9 @@ src/main/java/com/travel/demo
 │ └── impl
 ├── security # JWT, Permission, Role
 └── TravelDemoApplication.java
+
 🧪 Chạy project
 mvn clean install
 mvn spring-boot:run
 📄 License
-
 Dự án phục vụ mục đích học tập và phát triển nội bộ.
