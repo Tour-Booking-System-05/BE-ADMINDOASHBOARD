@@ -2,7 +2,6 @@
 
 Backend cho **Admin Dashboard** của hệ thống **Tour Booking System**.  
 Dự án cung cấp các API quản trị cho việc quản lý **tour, đơn hàng, nhân viên, danh mục, khuyến mãi**, kèm theo **Activity Log (timeline hoạt động)** và **phân quyền theo role**.
-
 ---
 
 ## 🚀 Công nghệ sử dụng
