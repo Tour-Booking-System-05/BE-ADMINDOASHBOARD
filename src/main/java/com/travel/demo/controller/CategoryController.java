@@ -1,5 +1,6 @@
 package com.travel.demo.controller;
 
+import com.travel.demo.annotation.ActivityAudit;
 import com.travel.demo.dto.CategoryDTO;
 import com.travel.demo.service.CategoryService;
 import com.travel.demo.service.CloudinaryService;
@@ -37,6 +38,12 @@ public class CategoryController {
     }
 
     @PostMapping
+    @ActivityAudit(
+            type = "CATEGORY",
+            entityType = "CATEGORY",
+            title = "Tạo danh mục mới",
+            description = "Admin {actor} đã tạo danh mục mới"
+    )
     public ResponseEntity<CategoryDTO> create(@RequestBody CategoryDTO categoryDTO) {
 //request body -> lấy body từ request gửi lên
         return ResponseEntity.ok(categoryService.create(categoryDTO));
@@ -44,7 +51,13 @@ public class CategoryController {
 
 
     }
-
+    @ActivityAudit(
+            type = "CATEGORY",
+            entityType = "CATEGORY",
+            entityIdParam = "id",
+            title = "Cập nhật danh mục #{id}",
+            description = "Admin {actor} cập nhật danh mục #{id}"
+    )
     @PutMapping("/{id}")
     public ResponseEntity<CategoryDTO> update(@PathVariable Integer id, @RequestBody CategoryDTO categoryDTO) {
         return ResponseEntity.ok(categoryService.update(id, categoryDTO));
@@ -52,6 +65,13 @@ public class CategoryController {
 
     //    Lấy giá trị từ URL path (đường dẫn) mà người dùng gọi API.
     @DeleteMapping("/{id}")
+    @ActivityAudit(
+            type = "CATEGORY",
+            entityType = "CATEGORY",
+            entityIdParam = "id",
+            title = "Xoá danh mục #{id}",
+            description = "Admin {actor} đã xoá danh mục #{id}"
+    )
     public ResponseEntity<?> deleteCategory(@PathVariable Integer id) {
         try {
             categoryService.softDelete(id);
@@ -81,6 +101,13 @@ public class CategoryController {
 
     // Xóa nhiều
     @DeleteMapping("/bulk-delete")
+    @ActivityAudit(
+            type = "CATEGORY",
+            entityType = "CATEGORY",
+            entityIdParam = "id",
+            title = "Xoá danh mục #{id}",
+            description = "Admin {actor} đã xoá danh mục #{id}"
+    )
     public ResponseEntity<?> deleteMultipe(@RequestBody List<Integer> ids) {
         try {
             String message = categoryService.deleteMultipe(ids);

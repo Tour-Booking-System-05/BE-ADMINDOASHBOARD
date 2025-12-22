@@ -1,5 +1,6 @@
 package com.travel.demo.controller;
 
+import com.travel.demo.annotation.ActivityAudit;
 import com.travel.demo.dto.UserDTO;
 import com.travel.demo.service.UserService;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -42,10 +43,24 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @ActivityAudit(
+            type = "USER",
+            entityType = "USER",
+            entityIdParam = "id",
+            title = "Xóa khách hàng #{id}",
+            description = "Admin {actor} xóa khách hàng #{id}"
+    )
     public ResponseEntity<UserDTO> deleteUser(@PathVariable Integer id){
         return ResponseEntity.ok(userService.delelete(id));
     }
     @DeleteMapping("/bulk-delete")
+    @ActivityAudit(
+            type = "USER",
+            entityType = "USER",
+            entityIdParam = "id",
+            title = "Xóa khách hàng #{id}",
+            description = "Admin {actor} xóa khách hàng #{id}"
+    )
     public ResponseEntity<?> deleteMultipe(@RequestBody List<Integer> ids) {
         try {
             String message = userService.deleteMultipe(ids);
@@ -56,6 +71,13 @@ public class UserController {
         }
     }
     @PutMapping("/{id}")
+    @ActivityAudit(
+            type = "USER",
+            entityType = "USER",
+            entityIdParam = "id",
+            title = "Cập nhật khách hàng #{id}",
+            description = "Admin {actor} cập nhật khách hàng  #{id}"
+    )
     public  ResponseEntity<UserDTO> updateUser(@PathVariable Integer id, @Valid @RequestBody UserDTO userDTO){
         return ResponseEntity.ok(userService.updateUser(id, userDTO));
     }

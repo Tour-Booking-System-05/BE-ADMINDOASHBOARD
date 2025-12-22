@@ -1,5 +1,6 @@
 package com.travel.demo.controller;
 
+import com.travel.demo.annotation.ActivityAudit;
 import com.travel.demo.dto.SettingsDTO;
 import com.travel.demo.service.CloudinaryService;
 import com.travel.demo.service.SettingsService;
@@ -28,6 +29,12 @@ public class SettingsController {
 
     // CREATE/UPDATE (singleton)
     @PutMapping
+    @ActivityAudit(
+            type = "SETTINGS",
+            entityType = "SETTINGS",
+            title = "Cập nhật setting của hệ thống ",
+            description = "Admin {actor} cập nhật setting của hệ thống "
+    )
     public ResponseEntity<SettingsDTO> save(@RequestBody SettingsDTO dto) {
         return ResponseEntity.ok(settingsService.save(dto));
     }

@@ -1,5 +1,6 @@
 package com.travel.demo.controller;
 
+import com.travel.demo.annotation.ActivityAudit;
 import com.travel.demo.dto.TourDTO;
 import com.travel.demo.service.CloudinaryService;
 import com.travel.demo.service.ItemService;
@@ -40,6 +41,12 @@ public class TourController {
         return ResponseEntity.ok(Map.of("url", url));
     }
     @PostMapping
+    @ActivityAudit(
+            type = "TOUR",
+            entityType = "TOUR",
+            title = "Tạo chuyến đi mới",
+            description = "Admin {actor} đã tạo chuyến đi mới"
+    )
     public ResponseEntity<TourDTO> create (@Valid @RequestBody TourDTO tourDTO){
 //request body -> lấy body từ request gửi lên
         return ResponseEntity.ok(itemService.create(tourDTO));
@@ -49,16 +56,37 @@ public class TourController {
         return ResponseEntity.ok(itemService.getById(id));
     }
     @PutMapping("/{id}")
+    @ActivityAudit(
+            type = "TOUR",
+            entityType = "TOUR",
+            entityIdParam = "id",
+            title = "Cập nhật chuyến đi #{id}",
+            description = "Admin {actor} cập nhật chuyến đi  #{id}"
+    )
     public ResponseEntity<TourDTO> update(@PathVariable Integer id,@Valid @RequestBody TourDTO tourDTO){
         return ResponseEntity.ok(itemService.update(id, tourDTO));
     }
 
     @DeleteMapping("/{id}")
+    @ActivityAudit(
+            type = "TOUR",
+            entityType = "TOUR",
+            entityIdParam = "id",
+            title = "Xóa chuyến đi #{id}",
+            description = "Admin {actor} xóa chuyến đi  #{id}"
+    )
     public ResponseEntity<String> delete(@PathVariable Integer id){
         itemService.softDelete(id);
         return ResponseEntity.ok(("Done" + id));
     }
     @DeleteMapping("/bulk-delete")
+    @ActivityAudit(
+            type = "TOUR",
+            entityType = "TOUR",
+            entityIdParam = "id",
+            title = "Xóa chuyến đi #{id}",
+            description = "Admin {actor} xóa chuyến đi  #{id}"
+    )
     public ResponseEntity<Void> deleteMultiple(@RequestBody List<Integer> ids) {
         itemService.deleteMultipe(ids);
         return ResponseEntity.noContent().build();

@@ -1,5 +1,6 @@
 package com.travel.demo.controller;
 
+import com.travel.demo.annotation.ActivityAudit;
 import com.travel.demo.dto.OrderDTO;
 import com.travel.demo.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,13 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
     @PutMapping("/{id}")
+    @ActivityAudit(
+            type = "ORDER",
+            entityType = "ORDER",
+            entityIdParam = "id",
+            statusParam = "orderDTO",   // tên biến trong method của bạn
+            statusField = "status"      // field trong OrderDTO
+    )
     public ResponseEntity<OrderDTO> update(@PathVariable Integer id, @RequestBody OrderDTO orderDTO){
         return ResponseEntity.ok(orderService.update(id, orderDTO.getStatus()));
     }

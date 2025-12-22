@@ -1,5 +1,6 @@
 package com.travel.demo.controller;
 
+import com.travel.demo.annotation.ActivityAudit;
 import com.travel.demo.dto.ContentDTO;
 import com.travel.demo.service.CloudinaryService;
 import com.travel.demo.service.ContentService;
@@ -37,14 +38,34 @@ public class ContentController {
         return ResponseEntity.ok(contentService.getContentById(id));
     }
     @PostMapping
+    @ActivityAudit(
+            type = "CONTENT",
+            entityType = "CONTENT",
+            title = "Tạo tin tức  mới",
+            description = "Admin {actor} đã tạo tin tức  mới"
+    )
     public ResponseEntity<ContentDTO> createContent(@Valid  @RequestBody ContentDTO contentDTO){
         return ResponseEntity.ok(contentService.createContent(contentDTO));
     }
     @PutMapping("/{id}")
+    @ActivityAudit(
+            type = "CONTENT",
+            entityType = "CONTENT",
+            entityIdParam = "id",
+            title = "Cập nhật tin tức #{id}",
+            description = "Admin {actor} cập nhật tin tức #{id}"
+    )
     public ResponseEntity<ContentDTO> updateContent(@PathVariable Integer id, @Valid @RequestBody ContentDTO contentDTO){
         return  ResponseEntity.ok(contentService.updateContent(id, contentDTO));
     }
     @DeleteMapping("/{id}")
+    @ActivityAudit(
+            type = "CONTENT",
+            entityType = "CONTENT",
+            entityIdParam = "id",
+            title = "Xóa tin tức #{id}",
+            description = "Admin {actor} xóa tin tức  #{id}"
+    )
     public  ResponseEntity<?> deleteContent(@PathVariable Integer id){
         try {
             contentService.softDelete(id);
@@ -60,6 +81,13 @@ public class ContentController {
         }
     }
     @DeleteMapping("/bulk-delete")
+    @ActivityAudit(
+            type = "CONTENT",
+            entityType = "CONTENT",
+            entityIdParam = "id",
+            title = "Xóa tin tức #{id}",
+            description = "Admin {actor} xóa tin tức  #{id}"
+    )
     public ResponseEntity<?> deleteMultipe(@RequestBody List<Integer> ids) {
         try {
             String message = contentService.deleteMultipe(ids);

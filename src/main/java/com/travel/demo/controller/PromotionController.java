@@ -1,5 +1,6 @@
 package com.travel.demo.controller;
 
+import com.travel.demo.annotation.ActivityAudit;
 import com.travel.demo.dto.PromotionDTO;
 import com.travel.demo.service.PromotionService;
 import jakarta.validation.Valid;
@@ -32,19 +33,46 @@ public class PromotionController {
     }
 
     @DeleteMapping("/{id}")
+    @ActivityAudit(
+            type = "PROMOTION",
+            entityType = "PROMOTION",
+            entityIdParam = "id",
+            title = "Xóa mã khuyến mãi #{id}",
+            description = "Admin {actor} xóa mã khuyến mãi#{id}"
+    )
     public ResponseEntity<String> deletePromotionById(@PathVariable Integer id){
         promotionService.deletePromotionById(id);
         return ResponseEntity.ok( "Đã xóa thành công " + id);
     }
     @PostMapping
+    @ActivityAudit(
+            type = "PROMOTION",
+            entityType = "PROMOTION",
+            title = "Tạo mã khuyến mãi #{id}",
+            description = "Admin {actor} tạo mã khuyến mãi#{id}"
+    )
     public ResponseEntity<PromotionDTO> createPromotion(@Valid @RequestBody PromotionDTO promotionDTO){
         return ResponseEntity.ok(promotionService.createPromotion(promotionDTO));
     }
     @PutMapping("/{id}")
+    @ActivityAudit(
+            type = "PROMOTION",
+            entityType = "PROMOTION",
+            entityIdParam = "id",
+            title = "Chỉnh sửa mã khuyến mãi #{id}",
+            description = "Admin {actor} cập nhật thông tin khuyến mãi#{id}"
+    )
     public ResponseEntity<PromotionDTO> updatePromotion(@PathVariable Integer id,@Valid @RequestBody PromotionDTO promotionDTO){
         return ResponseEntity.ok(promotionService.updatePromotion(id,promotionDTO));
     }
     @DeleteMapping("/bulk-delete")
+    @ActivityAudit(
+            type = "PROMOTION",
+            entityType = "PROMOTION",
+            entityIdParam = "id",
+            title = "Xóa mã khuyến mãi #{id}",
+            description = "Admin {actor} xóa mã khuyến mãi#{id}"
+    )
     public ResponseEntity<Void> deleteMultiple(@RequestBody List<Integer> ids) {
         promotionService.deleteMultipe(ids);
         return ResponseEntity.noContent().build();

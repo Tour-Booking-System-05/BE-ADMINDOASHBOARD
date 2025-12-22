@@ -196,37 +196,20 @@ public class EmployeesServiceImpl implements EmployeesService {
     public Page<EmployeeDTO> getAllEmployees(int page, int size, String sortBy, String direction, String keyword) {
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
+        Accounts current = currentAccount();
 
-        // --- Query có điều kiện ---
+        int myRoleId = current.getRoleEntity().getRoleId();
+
         Page<Employees> employeesPage;
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            employeesPage = employeesRepository
-                    .findByAccount_DeleteAtIsNullAndFullNameContainingIgnoreCase(keyword, pageable);
+            employeesPage = employeesRepository.searchVisibleEmployees(myRoleId, keyword.trim(), pageable);
         } else {
-            employeesPage = employeesRepository
-                    .findByAccount_DeleteAtIsNull(pageable);
+            employeesPage = employeesRepository.findVisibleEmployees(myRoleId, pageable);
         }
 
-        Accounts current = currentAccount();
-        int myRoleId = current.getRoleEntity().getRoleId();
+        return employeesPage.map(this::toDTO);
 
-        List<EmployeeDTO> filtered = employeesPage.getContent().stream()
-                .map(this::toDTO)
-                .filter(dto ->
-                        dto.getRoleId() != null &&
-                                dto.getRoleId() >= myRoleId
-                )
-                .toList();
-
-        // ⚠️ totalElements:
-        // - dùng employeesPage.getTotalElements(): giữ nguyên tổng DB
-        // - dùng filtered.size(): tổng đúng theo quyền
-        return new PageImpl<>(
-                filtered,
-                pageable,
-                filtered.size() // 👈 khuyên dùng cái này
-        );
     }
 
 

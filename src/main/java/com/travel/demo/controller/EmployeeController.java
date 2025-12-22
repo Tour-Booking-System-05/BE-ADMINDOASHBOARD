@@ -1,5 +1,6 @@
 package com.travel.demo.controller;
 
+import com.travel.demo.annotation.ActivityAudit;
 import com.travel.demo.dto.EmployeeCreateRequest;
 import com.travel.demo.dto.EmployeeDTO;
 import com.travel.demo.dto.EmployeeUpdateRequest;
@@ -27,6 +28,12 @@ public class EmployeeController {
 
 
     @PostMapping
+    @ActivityAudit(
+            type = "EMPLOYEE",
+            entityType = "EMPLOYEE",
+            title = "Tạo nhân viên mới",
+            description = "Admin {actor} đã tạo nhân viên mới"
+    )
     @PreAuthorize("@permissionChecker.hasPermission(authentication,'EMPLOYEE_MANAGE')")
     public ResponseEntity<EmployeeDTO> create(@RequestBody EmployeeCreateRequest req) {
         return ResponseEntity.ok(employeesService.createEmployee(req));
@@ -39,7 +46,7 @@ public class EmployeeController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "employeeId") String sortBy,
-            @RequestParam(defaultValue = "ASC") String direction,
+            @RequestParam(defaultValue = "DESC") String direction,
             @RequestParam(required = false) String keyword
     ) {
         return ResponseEntity.ok(
@@ -57,6 +64,13 @@ public class EmployeeController {
 
     // UPDATE
     @PutMapping("/{id}")
+    @ActivityAudit(
+            type = "EMPLOYEE",
+            entityType = "EMPLOYEE",
+            entityIdParam = "id",
+            title = "Cập nhật thông tin nhân viên #{id}",
+            description = "Admin {actor} cập nhật thông tin nhân viên #{id}"
+    )
     @PreAuthorize("@permissionChecker.hasPermission(authentication,'EMPLOYEE_MANAGE')")
     public ResponseEntity<EmployeeDTO> update(@PathVariable Integer id,
                                               @RequestBody EmployeeUpdateRequest req) {
@@ -65,12 +79,26 @@ public class EmployeeController {
 
     // DELETE (soft delete account)
     @DeleteMapping("/{id}")
+    @ActivityAudit(
+            type = "EMPLOYEE",
+            entityType = "EMPLOYEE",
+            entityIdParam = "id",
+            title = "Xóa nhân viên #{id}",
+            description = "Admin {actor} xóa nhân viên #{id}"
+    )
     @PreAuthorize("@permissionChecker.hasPermission(authentication,'EMPLOYEE_MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         employeesService.deleteEmployee(id);
         return ResponseEntity.noContent().build();
     }
     @PutMapping("/{id}/reset-password")
+    @ActivityAudit(
+            type = "EMPLOYEE",
+            entityType = "EMPLOYEE",
+            entityIdParam = "id",
+            title = "Cập nhật thông tin nhân viên #{id}",
+            description = "Admin {actor} cập nhật thông tin nhân viên #{id}"
+    )
     public ResponseEntity<?> resetPassword(@PathVariable Integer id) {
         String newPass = employeesService.resetPassword(id);
         return ResponseEntity.ok("Cập nhập mật khẩu thành công"

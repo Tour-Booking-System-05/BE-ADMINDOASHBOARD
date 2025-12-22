@@ -28,5 +28,33 @@ public interface EmployeesRepository extends JpaRepository<Employees, Integer> {
             String fullName,
             Pageable pageable
     );
+    /**
+     * Lấy danh sách employees có account chưa bị delete + roleId >= minRoleId
+     */
+    @Query("""
+        SELECT e
+        FROM Employees e
+        JOIN e.account a
+        JOIN a.roleEntity r
+        WHERE a.deleteAt IS NULL
+          AND r.roleId >= :minRoleId
+    """)
+    Page<Employees> findVisibleEmployees(@Param("minRoleId") int minRoleId, Pageable pageable);
 
+    /**
+     * Search theo fullName + account chưa delete + roleId >= minRoleId
+     */
+    @Query("""
+        SELECT e
+        FROM Employees e
+        JOIN e.account a
+        JOIN a.roleEntity r
+        WHERE a.deleteAt IS NULL
+          AND r.roleId >= :minRoleId
+          AND LOWER(e.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    """)
+    Page<Employees> searchVisibleEmployees(@Param("minRoleId") int minRoleId,
+                                           @Param("keyword") String keyword,
+                                           Pageable pageable);
 }
+
