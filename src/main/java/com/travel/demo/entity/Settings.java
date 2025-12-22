@@ -1,16 +1,12 @@
 package com.travel.demo.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "settings")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 public class Settings {
 
 	@Id
@@ -18,21 +14,21 @@ public class Settings {
 	@Column(name = "setting_id")
 	private Integer settingId;
 
-	@Column(name = "company_name")
+	@Column(name = "company_name", length = 255)
 	private String companyName;
 
-	@Column(name = "company_tax")
+	@Column(name = "company_tax", length = 255)
 	private String companyTax;
 
-	@Column(name = "company_address", columnDefinition = "TEXT")
+	@Column(name = "company_address", columnDefinition = "text")
 	private String companyAddress;
 
+	@Column(name = "phone", length = 15)
 	private String phone;
 
-	@Column(name = "url_website_user")
-	private String urlWebsiteUser;
+	@Column(name = "company_email", length = 255)
+	private String companyEmail;
 
-	@ManyToOne
-	@JoinColumn(name = "account_id")
-	private Accounts account;
+	@Column(name = "url_logo", columnDefinition = "text")
+	private String urlLogo;
 }

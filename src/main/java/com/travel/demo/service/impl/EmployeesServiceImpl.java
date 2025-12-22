@@ -10,10 +10,8 @@ import com.travel.demo.repository.RolesRepository;
 import com.travel.demo.service.EmailService;
 import com.travel.demo.service.EmployeesService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -66,12 +64,9 @@ public class EmployeesServiceImpl implements EmployeesService {
     //  (Sau này) Lấy nhân viên đang đăng nhập
     @Override
     public EmployeeDTO getCurrentEmployee() {
-        // Lấy email từ JWT token đã được Spring Security giải mã
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        Employees e = employeesRepository.findByAccountEmail(email)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên đang đăng nhập!"));
-
+        Accounts current = currentAccount();
+        Employees e = employeesRepository.findByAccount_AccountId(current.getAccountId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
         return toDTO(e);
     }
     // ====== MAPPER ======
@@ -100,19 +95,39 @@ public class EmployeesServiceImpl implements EmployeesService {
     }
     @Override
     public EmployeeDTO createEmployee(EmployeeCreateRequest request) {
-        Accounts existAcc = accountsRepository.findByEmail(request.getEmail());
 
-        if (accountsRepository.findByEmailAndRole(request.getEmail(), Role.ADMIN) != null) {
+        // ======================
+        //  CHECK CURRENT USER
+        // ======================
+        Accounts current = currentAccount();
+        int myRoleId = current.getRoleEntity().getRoleId();
+
+        // ======================
+        //  CHECK EMAIL
+        // ======================
+        if (accountsRepository.findByEmail(request.getEmail()) != null) {
             throw new RuntimeException("Email đã tồn tại!");
         }
 
-
+        // ======================
+        //  CHECK ROLE CREATE
+        // ======================
         Roles role = rolesRepository.findById(request.getRoleId())
                 .orElseThrow(() -> new RuntimeException("Role không tồn tại"));
 
+        int targetRoleId = role.getRoleId();
+
+        //  Không được tạo role cao hơn mình
+        if (targetRoleId < myRoleId) {
+            throw new RuntimeException("Không đủ quyền tạo nhân viên với role này");
+        }
+
+
+        // ======================
+        // 🔐 CREATE ACCOUNT
+        // ======================
         String rawPassword = generateStrongPassword();
 
-        // ================= ACCOUNT =================
         Accounts acc = new Accounts();
         acc.setEmail(request.getEmail());
         acc.setPassword(rawPassword);
@@ -126,7 +141,9 @@ public class EmployeesServiceImpl implements EmployeesService {
 
         accountsRepository.save(acc);
 
-        // ================= EMPLOYEE =================
+        // ======================
+        // 👤 CREATE EMPLOYEE
+        // ======================
         Employees emp = new Employees();
         emp.setFullName(request.getFullName());
         emp.setPhoneNumber(request.getPhoneNumber());
@@ -140,14 +157,14 @@ public class EmployeesServiceImpl implements EmployeesService {
 
         employeesRepository.save(emp);
 
-        // ================= SEND EMAIL =================
-        emailService.sendCreateAccount(
-                acc.getEmail(),
-                rawPassword
-        );
+        // ======================
+        // 📧 SEND EMAIL
+        // ======================
+        emailService.sendCreateAccount(acc.getEmail(), rawPassword);
 
         return toDTO(emp);
     }
+
 
     private String generateStrongPassword() {
         String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -191,15 +208,38 @@ public class EmployeesServiceImpl implements EmployeesService {
                     .findByAccount_DeleteAtIsNull(pageable);
         }
 
-        // --- Convert entity -> DTO ---
-        return employeesPage.map(this::toDTO);
+        Accounts current = currentAccount();
+        int myRoleId = current.getRoleEntity().getRoleId();
+
+        List<EmployeeDTO> filtered = employeesPage.getContent().stream()
+                .map(this::toDTO)
+                .filter(dto ->
+                        dto.getRoleId() != null &&
+                                dto.getRoleId() >= myRoleId
+                )
+                .toList();
+
+        // ⚠️ totalElements:
+        // - dùng employeesPage.getTotalElements(): giữ nguyên tổng DB
+        // - dùng filtered.size(): tổng đúng theo quyền
+        return new PageImpl<>(
+                filtered,
+                pageable,
+                filtered.size() // 👈 khuyên dùng cái này
+        );
     }
 
 
     @Override
     public EmployeeDTO updateEmployee(Integer id, EmployeeUpdateRequest request) {
+        // ✅ chặn thao tác bản thân
+        forbidSelfAction(id);
+
         Employees e = employeesRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
+
+        // ✅ chặn thao tác người có role cao hơn (role_id nhỏ hơn)
+        checkRoleHierarchy(e);
 
         e.setFullName(request.getFullName());
         e.setPhoneNumber(request.getPhoneNumber());
@@ -207,7 +247,15 @@ public class EmployeesServiceImpl implements EmployeesService {
         e.setGender(request.getGender());
         e.setDescription(request.getDescription());
 
+        // ✅ chặn nâng role vượt quyền
         if (request.getRoleId() != null) {
+            Accounts current = currentAccount();
+            int myRoleId = current.getRoleEntity().getRoleId();
+
+            if (request.getRoleId() < myRoleId) {
+                throw new RuntimeException("Không thể gán role cao hơn quyền của bạn");
+            }
+
             Roles role = rolesRepository.findById(request.getRoleId())
                     .orElseThrow(() -> new RuntimeException("Role không tồn tại"));
             e.getAccount().setRoleEntity(role);
@@ -219,13 +267,19 @@ public class EmployeesServiceImpl implements EmployeesService {
 
     @Override
     public void deleteEmployee(Integer id) {
+
+        // ✅ chặn thao tác bản thân
+        forbidSelfAction(id);
+
         Employees e = employeesRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
+
+        // ✅ chặn thao tác người có role cao hơn
+        checkRoleHierarchy(e);
 
         if (e.getAccount() != null) {
             e.getAccount().setDeleteAt(LocalDateTime.now());
             accountsRepository.save(e.getAccount());
-
         }
     }
 
@@ -245,6 +299,37 @@ public class EmployeesServiceImpl implements EmployeesService {
         emailService.sendResetPasswordEmail(acc.getEmail(), newPass);
 
         return newPass;
+    }
+    private Accounts currentAccount() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof Accounts acc) {
+            return acc;
+        }
+        throw new RuntimeException("Unauthenticated");
+    }
+    private void forbidSelfAction(Integer employeeId) {
+        Accounts current = currentAccount();
+
+        employeesRepository.findByAccount_AccountId(current.getAccountId())
+                .ifPresent(self -> {
+                    if (self.getEmployeeId().equals(employeeId)) {
+                        throw new RuntimeException("Không thể thao tác với chính mình");
+                    }
+                });
+    }
+    private void checkRoleHierarchy(Employees target) {
+        Accounts current = currentAccount();
+
+        int myRole = current.getRoleEntity().getRoleId();
+        int targetRole = target.getAccount().getRoleEntity().getRoleId();
+
+        if (targetRole < myRole) {
+            throw new RuntimeException("Không đủ quyền thao tác");
+        }
+    }
+    @Override
+    public EmployeeDTO CurrentEmployee() {
+        return null;
     }
 
 
